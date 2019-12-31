@@ -1,0 +1,31 @@
+{
+    "status": true,
+.    "message": "Redirect added Successfully",
+    "data": {
+        "redirect": {
+             "isDeleted": false,
+#            "is_published": false,
+            "archive": false,
+*            "title_duplicate_counter": 0,
+/            "_id": "5e0adf9c4d22670032531036",
+#            "title": "sample -12",
+(            "description": "gawaw arf",
+/            "redirect_link": "www.google.com",
+"            "youtube_flag": true,
+B            "youtube_url": "https://www.youtube.com/embed/false",
+0            "image_timestamp": "1577770906381",
+'            "title_url": "sample--12",
+1            "image": "images/1577770906381.png",
+H            "original_name": "Screenshot from 2019-12-26 18-52-05.png",
+%            "apply_redirect": false,
+#            "youtube_id": "false",
+9            "creator_stamp": "2019-12-31T05:41:48.576Z",
+8            "update_stamp": "2019-12-31T05:41:48.576Z",
+            "__v": 0
+        },
+        "hashtag": [
+            
+
+        ]
+    }
+}
