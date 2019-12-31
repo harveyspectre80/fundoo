@@ -190,4 +190,42 @@ public class fundooAppAutomationTesting {
         Assert.assertEquals("All Redirects retrieved Successfully", message);
         Assert.assertEquals(200, statusCode);
     }
+
+    @Test
+    public void givenToken_ShouldDoHashtagEdits() throws ParseException {
+        Response response = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .header("token","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3Njc3NjMsImV4cCI6MTU3Nzg1NDE2M30.eTC8a7jKE1SKSQG_McwdOEVWlrgrNVs7dQP3vJHPMtk")
+                .when()
+                .body("{\"redirect_id\":\"5e0ad3a94d2267003253100e\",\"hashtag\":\"#bridgelabz #solutions #mumbai #bangalore #fundoopush\"}")
+                .post("https://fundoopush-backend-dev.bridgelabz.com/hashtag/edit");
+        int statusCode = response.getStatusCode();
+        ResponseBody body = response.getBody();
+        JSONObject Object = (JSONObject) new JSONParser().parse(body.prettyPrint());
+        boolean status = (boolean) Object.get("status");
+        String message = (String) Object.get("message");
+        Assert.assertTrue(status);
+        Assert.assertEquals("Hashtag edit done Successfully", message);
+        Assert.assertEquals(200, statusCode);
+    }
+
+    @Test
+    public void givenTokenAndHashtag_ShouldsendHashtag() throws ParseException {
+        Response response = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .header("token","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3Njc3NjMsImV4cCI6MTU3Nzg1NDE2M30.eTC8a7jKE1SKSQG_McwdOEVWlrgrNVs7dQP3vJHPMtk")
+                .pathParam("hashtagname"," #bangalore")
+                .when()
+                .get("https://fundoopush-backend-dev.bridgelabz.com/redirects/hashtag/%23bangalore");
+        int statusCode = response.getStatusCode();
+        ResponseBody body = response.getBody();
+        JSONObject Object = (JSONObject) new JSONParser().parse(body.prettyPrint());
+        boolean status = (boolean) Object.get("status");
+        String message = (String) Object.get("message");
+        Assert.assertTrue(status);
+        Assert.assertEquals("Hashtag sent Successfully", message);
+        Assert.assertEquals(200, statusCode);
+    }
 }
