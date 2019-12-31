@@ -109,4 +109,32 @@ public class fundooAppAutomationTesting {
         Assert.assertEquals("Redirect added Successfully", message);
         Assert.assertEquals(201, statusCode);
     }
+
+    @Test
+    public void givenCorrectId_ShouldUpdateRedirectWithCorrectParameters() throws ParseException {
+        File testUploadFile = new File("/home/admin1/Pictures/Screenshot from 2019-12-26 18-52-05.png");
+        Response response = RestAssured.given()
+                .accept(ContentType.JSON)
+                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3Njc3NjMsImV4cCI6MTU3Nzg1NDE2M30.eTC8a7jKE1SKSQG_McwdOEVWlrgrNVs7dQP3vJHPMtk")
+                .formParam("_id","5e0ad3a94d2267003253100e")
+                .multiPart("image",testUploadFile)
+                .formParam("title", "sample1")
+                .formParam("description", "gawaw arfsa")
+                .formParam("redirect_link", "www.youtube.com")
+                .formParam("is_published",false)
+                .formParam("archive", false)
+                .formParam("youtube_flag", false)
+                .formParam("youtube_url",false)
+                .formParam("video-link",false)
+                .when()
+                .put("https://fundoopush-backend-dev.bridgelabz.com/redirects");
+        int statusCode = response.getStatusCode();
+        ResponseBody body = response.getBody();
+        JSONObject Object = (JSONObject) new JSONParser().parse(body.prettyPrint());
+        boolean status = (boolean) Object.get("status");
+        String message = (String) Object.get("message");
+        Assert.assertTrue(status);
+        Assert.assertEquals("Redirect updated Successfully", message);
+        Assert.assertEquals(200, statusCode);
+    }
 }
