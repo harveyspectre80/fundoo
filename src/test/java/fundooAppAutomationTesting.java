@@ -273,8 +273,7 @@ public class fundooAppAutomationTesting {
     }
 
     @Test
-    public void givenToken_Should() {
-
+    public void givenTokenAndUserDetails_ShouldAddJob() {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("redirect_id", "5e0d8a173b17ce008e85dc27");
         jsonObject.put("years_of_experience", 2);
@@ -284,7 +283,25 @@ public class fundooAppAutomationTesting {
         Response response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
-                .header("token","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc5NDY0OTAsImV4cCI6MTU3ODAzMjg5MH0.cNIYyuD35U4WUp8tUnajXx2epG2E7-FUknQfC21d-K8")
+                .header("token","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc5NDk0NTEsImV4cCI6MTU3ODAzNTg1MX0.VNnB-AqUCUvWiPQF1roF_R88tJ9U4KZ0UYvebIaVEA4")
+                .body(jsonObject.toJSONString())
+                .when()
+                .post("https://fundoopush-backend-dev.bridgelabz.com/jobs");
+        int status = response.getStatusCode();
+        String string = response.asString();
+        System.out.println(string);
+        MatcherAssert.assertThat(status, Matchers.equalTo(HttpStatus.SC_OK));
+    }
+
+    @Test
+    public void givenTokenAndJobId_ShouldAddHashtagForJob() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("job_id", "5e0d8fe33b17ce008e85dc4a");
+        jsonObject.put("hashtag", "#Mumbai");
+        Response response = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .header("token","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc5NDcwMjUsImV4cCI6MTU3ODAzMzQyNX0.1SEnbgiW7b_z5-DKVhceajfYRD9QFntfR_rHfUogOkw")
                 .body(jsonObject.toJSONString())
                 .when()
                 .post("https://fundoopush-backend-dev.bridgelabz.com/jobs");
@@ -293,6 +310,25 @@ public class fundooAppAutomationTesting {
         System.out.println(string);
         MatcherAssert.assertThat(status, Matchers.equalTo(HttpStatus.SC_OK));
         ResponseBody body = response.getBody();
-
     }
+
+    @Test
+    public void givenTokenHashtagIdJobId_ShouldRemovehashtagForJob() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("job_id", "5e0d8fe33b17ce008e85dc4a");
+        jsonObject.put("hashtag_id", "5d39926ab19c56004f263df6");
+        Response response = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .header("token","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc5NDk0NTEsImV4cCI6MTU3ODAzNTg1MX0.VNnB-AqUCUvWiPQF1roF_R88tJ9U4KZ0UYvebIaVEA4")
+                .body(jsonObject.toJSONString())
+                .when()
+                .post("https://fundoopush-backend-dev.bridgelabz.com/jobs/hashtag/remove\n");
+        int status = response.getStatusCode();
+        String string = response.asString();
+        System.out.println(string);
+        MatcherAssert.assertThat(status, Matchers.equalTo(HttpStatus.SC_OK));
+        ResponseBody body = response.getBody();
+    }
+
 }
