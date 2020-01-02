@@ -83,7 +83,7 @@ public class fundooAppAutomationTesting {
         File testUploadFile = new File("/home/admin1/Pictures/Screenshot from 2019-12-26 18-52-05.png");
         Response response = RestAssured.given()
                 .accept(ContentType.JSON)
-                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3Njc3NjMsImV4cCI6MTU3Nzg1NDE2M30.eTC8a7jKE1SKSQG_McwdOEVWlrgrNVs7dQP3vJHPMtk")
+                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc5NTExOTAsImV4cCI6MTU3ODAzNzU5MH0.1Zy21qIN0aGNdU1X5D9jnFVWusDjO1FxB23Bg52mP9w")
                 .multiPart("image", testUploadFile)
                 .formParam("title", "sample ")
                 .formParam("description", "gawaw arf")
@@ -103,6 +103,29 @@ public class fundooAppAutomationTesting {
         Assert.assertTrue(status);
         Assert.assertEquals("Redirect added Successfully", message);
         Assert.assertEquals(201, statusCode);
+    }
+
+    @Test
+    public void givenAllDetailsForForm_ShouldGiveErrorForFormWithCorrectParameters() throws ParseException {
+        File testUploadFile = new File("/home/admin1/Pictures/Screenshot from 2019-12-26 18-52-05.png");
+        Response response = RestAssured.given()
+                .accept(ContentType.JSON)
+                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3Njc3NjMsImV4cCI6MTU3Nzg1NDE2M30.eTC8a7jKE1SKSQG_McwdOEVWlrgrNVs7dQP3vJHPMtk")
+                .multiPart("image", testUploadFile)
+                .formParam("title", "sample ")
+                .formParam("description", "gawaw arf")
+                .formParam("redirect_link", "www.google.com")
+                .formParam("is_published", false)
+                .formParam("archive", false)
+                .formParam("youtube_flag", false)
+                .formParam("youtube_url", false)
+                .formParam("video-link", false)
+                .when()
+                .post("https://fundoopush-backend-dev.bridgelabz.com/redirects");
+        ResponseBody body = response.getBody();
+        JSONObject Object = (JSONObject) new JSONParser().parse(body.prettyPrint());
+        String message = (String) Object.get("message");
+        Assert.assertEquals("Unauthorised Login", message);
     }
 
     @Test
