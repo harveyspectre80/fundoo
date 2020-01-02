@@ -1,10 +1,5 @@
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.http.Header;
 import io.restassured.response.Response;
 import io.restassured.response.ResponseBody;
 import io.restassured.specification.RequestSpecification;
@@ -15,15 +10,10 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import java.io.File;
 
-import static io.restassured.RestAssured.get;
-import static io.restassured.RestAssured.post;
-
 public class fundooAppAutomationTesting {
-
     @Test
     public void givenUser_OnPostRegistration_ShouldReturnRegisteredValue() {
         RequestSpecification request = RestAssured.given();
@@ -46,7 +36,6 @@ public class fundooAppAutomationTesting {
         jsonObject.put("password", "");
         request.body(jsonObject.toJSONString());
         Response response = request.post("https://fundoopush-backend-dev.bridgelabz.com/registration");
-
         int code = response.getStatusCode();
         Assert.assertEquals(201, code);
     }
@@ -330,5 +319,4 @@ public class fundooAppAutomationTesting {
         MatcherAssert.assertThat(status, Matchers.equalTo(HttpStatus.SC_OK));
         ResponseBody body = response.getBody();
     }
-
 }
