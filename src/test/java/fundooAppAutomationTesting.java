@@ -1,5 +1,6 @@
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.response.ResponseBody;
 import io.restassured.specification.RequestSpecification;
@@ -10,10 +11,27 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import java.io.File;
 
 public class fundooAppAutomationTesting {
+    private String tokenValue;
+
+    @Before
+    public void setUp() throws Exception {
+        Response response = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .when()
+                .body("{\"email\" : \"shikamaru@gmail.com\", \"password\" : \"123456\"}")
+                .post("https://fundoopush-backend-dev.bridgelabz.com/login");
+        String resAsString = response.asString();
+        JsonPath jsonPath = new JsonPath(resAsString);
+        tokenValue = jsonPath.getString("token");
+    }
+
+
     @Test
     public void givenUser_OnPostRegistration_ShouldReturnRegisteredValue() {
         RequestSpecification request = RestAssured.given();
@@ -24,7 +42,7 @@ public class fundooAppAutomationTesting {
         request.body(jsonObject.toJSONString());
         Response response = request.post("https://fundoopush-backend-dev.bridgelabz.com/registration");
         int code = response.getStatusCode();
-        Assert.assertEquals(201, code);
+        Assert.assertEquals(409, code);
     }
 
     @Test
@@ -32,12 +50,12 @@ public class fundooAppAutomationTesting {
         RequestSpecification request = RestAssured.given();
         request.header("Content-Type", "application/json");
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("email", "shikamaru1@gmail.com");
+        jsonObject.put("email", "shikamaru@gmail.com");
         jsonObject.put("password", "");
         request.body(jsonObject.toJSONString());
         Response response = request.post("https://fundoopush-backend-dev.bridgelabz.com/registration");
         int code = response.getStatusCode();
-        Assert.assertEquals(201, code);
+        Assert.assertEquals(400, code);
     }
 
     @Test
@@ -71,7 +89,7 @@ public class fundooAppAutomationTesting {
         Response response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
-                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZmE4NGQyMjY3MDAzMjUzMGZkMCJ9LCJpYXQiOjE1Nzc3MDU4NjQsImV4cCI6MTU3Nzc5MjI2NH0.Sn0bRz-1rSKIo2qzwCp2_UPP1dPYXBFjM7XXrygHlh4")
+                .header("token", tokenValue)
                 .when()
                 .post("https://fundoopush-backend-dev.bridgelabz.com/logout");
         int code = response.getStatusCode();
@@ -83,7 +101,7 @@ public class fundooAppAutomationTesting {
         File testUploadFile = new File("/home/admin1/Pictures/Screenshot from 2019-12-26 18-52-05.png");
         Response response = RestAssured.given()
                 .accept(ContentType.JSON)
-                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc5NTExOTAsImV4cCI6MTU3ODAzNzU5MH0.1Zy21qIN0aGNdU1X5D9jnFVWusDjO1FxB23Bg52mP9w")
+                .header("token", tokenValue)
                 .multiPart("image", testUploadFile)
                 .formParam("title", "sample ")
                 .formParam("description", "gawaw arf")
@@ -106,11 +124,11 @@ public class fundooAppAutomationTesting {
     }
 
     @Test
-    public void givenAllDetailsForForm_ShouldGiveErrorForFormWithCorrectParameters() throws ParseException {
+    public void givenAllDetailsForForm_ShouldGiveErrorForForm() throws ParseException {
         File testUploadFile = new File("/home/admin1/Pictures/Screenshot from 2019-12-26 18-52-05.png");
         Response response = RestAssured.given()
                 .accept(ContentType.JSON)
-                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3Njc3NjMsImV4cCI6MTU3Nzg1NDE2M30.eTC8a7jKE1SKSQG_McwdOEVWlrgrNVs7dQP3vJHPMtk")
+                .header("token", tokenValue)
                 .multiPart("image", testUploadFile)
                 .formParam("title", "sample ")
                 .formParam("description", "gawaw arf")
@@ -125,15 +143,37 @@ public class fundooAppAutomationTesting {
         ResponseBody body = response.getBody();
         JSONObject Object = (JSONObject) new JSONParser().parse(body.prettyPrint());
         String message = (String) Object.get("message");
-        Assert.assertEquals("Unauthorised Login", message);
+        Assert.assertEquals("Redirect added Successfully", message);
     }
 
+    @Test
+    public void givenAllDetailsForForm_ShouldSubmitFormWithoutCorrectParameters() throws ParseException {
+        File testUploadFile = new File("/home/admin1/Pictures/Screenshot from 2019-12-26 18-52-05.png");
+        Response response = RestAssured.given()
+                .accept(ContentType.JSON)
+                .header("token", tokenValue)
+                .multiPart("image", testUploadFile)
+                .formParam("title", "sample ")
+                .formParam("description", "gawaw arf")
+                .formParam("redirect_link", "www.google.com")
+                .formParam("is_published", false)
+                .formParam("archive", false)
+                .formParam("youtube_flag", false)
+                .formParam("youtube_url", false)
+                .formParam("video-link", false)
+                .when()
+                .post("https://fundoopush-backend-dev.bridgelabz.com/redirects");
+        ResponseBody body = response.getBody();
+        JSONObject Object = (JSONObject) new JSONParser().parse(body.prettyPrint());
+        String message = (String) Object.get("message");
+        Assert.assertEquals("Redirect added Successfully", message);
+    }
     @Test
     public void givenCorrectId_ShouldUpdateRedirectWithCorrectParameters() throws ParseException {
         File testUploadFile = new File("/home/admin1/Pictures/Screenshot from 2019-12-26 18-52-05.png");
         Response response = RestAssured.given()
                 .accept(ContentType.JSON)
-                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3Njc3NjMsImV4cCI6MTU3Nzg1NDE2M30.eTC8a7jKE1SKSQG_McwdOEVWlrgrNVs7dQP3vJHPMtk")
+                .header("token", tokenValue)
                 .formParam("_id", "5e0ad3a94d2267003253100e")
                 .multiPart("image", testUploadFile)
                 .formParam("title", "sample1")
@@ -160,7 +200,7 @@ public class fundooAppAutomationTesting {
     public void givenToken_ShouldRetrieveAllRedirectstWithCorrectParameters() throws ParseException {
         Response response = RestAssured.given()
                 .accept(ContentType.JSON)
-                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3Njc3NjMsImV4cCI6MTU3Nzg1NDE2M30.eTC8a7jKE1SKSQG_McwdOEVWlrgrNVs7dQP3vJHPMtk")
+                .header("token", tokenValue)
                 .when()
                 .get("https://fundoopush-backend-dev.bridgelabz.com/redirects");
         int statusCode = response.getStatusCode();
@@ -178,7 +218,7 @@ public class fundooAppAutomationTesting {
         Response response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
-                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3Njc3NjMsImV4cCI6MTU3Nzg1NDE2M30.eTC8a7jKE1SKSQG_McwdOEVWlrgrNVs7dQP3vJHPMtk")
+                .header("token", tokenValue)
                 .when()
                 .body("{\"_id\":\"5e0ad3a94d2267003253100e\"}")
                 .post("https://fundoopush-backend-dev.bridgelabz.com/redirects/delete");
@@ -214,7 +254,7 @@ public class fundooAppAutomationTesting {
         Response response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
-                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3Njc3NjMsImV4cCI6MTU3Nzg1NDE2M30.eTC8a7jKE1SKSQG_McwdOEVWlrgrNVs7dQP3vJHPMtk")
+                .header("token", tokenValue)
                 .when()
                 .body("{\"redirect_id\":\"5e0ad3a94d2267003253100e\",\"hashtag\":\"#bridgelabz #solutions #mumbai #bangalore #fundoopush\"}")
                 .post("https://fundoopush-backend-dev.bridgelabz.com/hashtag/edit");
@@ -232,7 +272,7 @@ public class fundooAppAutomationTesting {
     public void givenTokenAndHashtag_ShouldsendHashtag() throws ParseException {
         Response response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3ODkyMzYsImV4cCI6MTU3Nzg3NTYzNn0.FkjUtY1BzmvyVWIEfZhhmnnuaGzOJska_HLWtfDFFy4")
+                .header("token", tokenValue)
                 .pathParam("hashtagname", " #bangalore")
                 .when()
                 .get("https://fundoopush-backend-dev.bridgelabz.com/redirects/hashtag/{hashtagname}");
@@ -251,7 +291,7 @@ public class fundooAppAutomationTesting {
         Response response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
-                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3Njc3NjMsImV4cCI6MTU3Nzg1NDE2M30.eTC8a7jKE1SKSQG_McwdOEVWlrgrNVs7dQP3vJHPMtk")
+                .header("token", tokenValue)
                 .body("{\"url\":\"https://www.deccanchronicle.com/technology/in-other-news/270319/companies-that-are-changing-the-way-education-is-being-delivered-to-st.html\"}")
                 .when()
                 .post("https://fundoopush-backend-dev.bridgelabz.com/web-scraping");
@@ -270,7 +310,7 @@ public class fundooAppAutomationTesting {
         Response response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
-                .header("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc3Njc3NjMsImV4cCI6MTU3Nzg1NDE2M30.eTC8a7jKE1SKSQG_McwdOEVWlrgrNVs7dQP3vJHPMtk")
+                .header("token", tokenValue)
                 .body("{\"hashtag\":\"#bridgelabz\"}")
                 .when()
                 .post("https://fundoopush-backend-dev.bridgelabz.com/search/hashtag");
@@ -295,7 +335,7 @@ public class fundooAppAutomationTesting {
         Response response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
-                .header("token","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc5NDk0NTEsImV4cCI6MTU3ODAzNTg1MX0.VNnB-AqUCUvWiPQF1roF_R88tJ9U4KZ0UYvebIaVEA4")
+                .header("token",tokenValue)
                 .body(jsonObject.toJSONString())
                 .when()
                 .post("https://fundoopush-backend-dev.bridgelabz.com/jobs");
@@ -308,15 +348,15 @@ public class fundooAppAutomationTesting {
     @Test
     public void givenTokenAndJobId_ShouldAddHashtagForJob() {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("job_id", "5e0d8fe33b17ce008e85dc4a");
-        jsonObject.put("hashtag", "#Mumbai");
+        jsonObject.put("job_id", "5e0ec0ad3a63df0032a2f496");
+        jsonObject.put("hashtag", "#mumbai");
         Response response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
-                .header("token","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc5NDcwMjUsImV4cCI6MTU3ODAzMzQyNX0.1SEnbgiW7b_z5-DKVhceajfYRD9QFntfR_rHfUogOkw")
+                .header("token",tokenValue)
                 .body(jsonObject.toJSONString())
                 .when()
-                .post("https://fundoopush-backend-dev.bridgelabz.com/jobs");
+                .post("https://fundoopush-backend-dev.bridgelabz.com/jobs/hashtag/add");
         int status = response.getStatusCode();
         String string = response.asString();
         System.out.println(string);
@@ -332,7 +372,7 @@ public class fundooAppAutomationTesting {
         Response response = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
-                .header("token","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVlMDlkZjEyNGQyMjY3MDAzMjUzMGZjYyJ9LCJpYXQiOjE1Nzc5NDk0NTEsImV4cCI6MTU3ODAzNTg1MX0.VNnB-AqUCUvWiPQF1roF_R88tJ9U4KZ0UYvebIaVEA4")
+                .header("token",tokenValue)
                 .body(jsonObject.toJSONString())
                 .when()
                 .post("https://fundoopush-backend-dev.bridgelabz.com/jobs/hashtag/remove\n");
